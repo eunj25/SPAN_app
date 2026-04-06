@@ -112,6 +112,7 @@ type ViewType = "home" | "create" | "profile" | "create-project"
 function SpanAppContent() {
   const [currentView, setCurrentView] = useState<ViewType>("home")
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [projectDetailFullScreen, setProjectDetailFullScreen] = useState(false)
   const { addMemo, addProject, projects } = useApp()
   const navCurrentView: "home" | "create" | "profile" =
     currentView === "profile"
@@ -140,11 +141,18 @@ function SpanAppContent() {
     }
   }
 
-  const handleCreateMemo = (data: { text: string; date: string; imageUrl: string; checklist: { id: string; text: string; checked: boolean }[] }) => {
+  const handleCreateMemo = (data: {
+    text: string
+    date: string
+    imageUrl: string
+    imageUrls: string[]
+    checklist: { id: string; text: string; checked: boolean }[]
+  }) => {
     if (projects.length > 0) {
       addMemo(projects[0].id, {
         id: `m${Date.now()}`,
-        ...data
+        ...data,
+        imageUrls: data.imageUrls.length > 0 ? data.imageUrls : undefined
       })
     }
     setCurrentView("home")
@@ -163,8 +171,14 @@ function SpanAppContent() {
   if (selectedProject) {
     return (
       <>
-        <ProjectDetail project={selectedProject} onBack={handleBackToHome} />
-        <BottomNav currentView="home" onNavigate={handleNavigate} />
+        <ProjectDetail
+          project={selectedProject}
+          onBack={handleBackToHome}
+          onFullScreenChange={setProjectDetailFullScreen}
+        />
+        {!projectDetailFullScreen && (
+          <BottomNav currentView="home" onNavigate={handleNavigate} />
+        )}
       </>
     )
   }

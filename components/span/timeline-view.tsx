@@ -1,6 +1,7 @@
 "use client"
 
 import { Memo } from "@/lib/store"
+import { getMemoPrimaryImage } from "@/lib/memo-images"
 import Image from "next/image"
 
 interface TimelineViewProps {
@@ -27,20 +28,29 @@ export function TimelineView({ memos, onSelectMemo }: TimelineViewProps) {
 
   return (
     <div className="space-y-4">
-      {sortedMemos.map((memo, index) => (
+      {sortedMemos.map((memo, index) => {
+        const cover = getMemoPrimaryImage(memo)
+        return (
         <button
           key={memo.id}
           type="button"
           onClick={() => onSelectMemo?.(memo)}
           className="group w-full overflow-hidden rounded-xl bg-card text-left transition-all hover:ring-1 hover:ring-primary/30"
         >
-          <div className="relative h-44 w-full overflow-hidden">
+          <div className="relative h-44 w-full overflow-hidden bg-muted">
+            {cover ? (
             <Image
-              src={memo.imageUrl}
+              src={cover}
               alt={`${memo.date} 기록`}
               fill
+              unoptimized={cover.startsWith("data:")}
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                사진 없음
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <div className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1 backdrop-blur-sm">
@@ -64,7 +74,8 @@ export function TimelineView({ memos, onSelectMemo }: TimelineViewProps) {
             </div>
           </div>
         </button>
-      ))}
+        )
+      })}
     </div>
   )
 }

@@ -6,7 +6,10 @@ export interface Memo {
   id: string
   date: string
   text: string
+  /** 첫 번째 이미지(하위 호환·목록 썸네일용) */
   imageUrl: string
+  /** 사진 여러 장(최대 5장) */
+  imageUrls?: string[]
   checklist?: { id: string; text: string; checked: boolean }[]
 }
 

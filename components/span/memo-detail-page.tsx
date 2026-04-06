@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import Image from "next/image"
 import { ArrowLeft, Pencil, CheckSquare, Square } from "lucide-react"
 import { Memo } from "@/lib/store"
+import { getMemoImages } from "@/lib/memo-images"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { MemoForm } from "./memo-form"
@@ -26,6 +27,7 @@ export function MemoDetailPage({
   const [isEditing, setIsEditing] = useState(false)
 
   const checklist = useMemo(() => memo.checklist ?? [], [memo.checklist])
+  const galleryImages = useMemo(() => getMemoImages(memo), [memo])
 
   if (isEditing) {
     return (
@@ -36,6 +38,7 @@ export function MemoDetailPage({
           text: memo.text,
           date: memo.date,
           imageUrl: memo.imageUrl,
+          imageUrls: memo.imageUrls,
           checklist: memo.checklist ?? [],
         }}
         projectStartDate={projectStartDate}
@@ -46,6 +49,7 @@ export function MemoDetailPage({
             text: data.text,
             date: data.date,
             imageUrl: data.imageUrl,
+            imageUrls: data.imageUrls.length > 0 ? data.imageUrls : undefined,
             checklist: data.checklist,
           })
           setIsEditing(false)
@@ -77,23 +81,48 @@ export function MemoDetailPage({
         </Button>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-6">
-        <div className="relative h-52 w-full overflow-hidden rounded-xl bg-secondary">
-          <Image
-            src={memo.imageUrl}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 512px"
-          />
-          <div className="absolute left-3 top-3 rounded-full bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
-            {new Date(memo.date).toLocaleDateString("ko-KR", {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-            })}
+      <main className="flex-1 space-y-6 overflow-auto p-4">
+        {galleryImages.length > 0 ? (
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {galleryImages.map((src, i) => (
+              <div
+                key={`${memo.id}-img-${i}`}
+                className="relative h-52 w-full min-w-[85%] shrink-0 overflow-hidden rounded-xl bg-secondary sm:min-w-[70%]"
+              >
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  unoptimized={src.startsWith("data:")}
+                  className="object-cover"
+                  sizes="(max-width: 768px) 85vw, 360px"
+                />
+                {i === 0 && (
+                  <div className="absolute left-3 top-3 rounded-full bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
+                    {new Date(memo.date).toLocaleDateString("ko-KR", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              {new Date(memo.date).toLocaleDateString("ko-KR", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+            <div className="flex h-52 w-full items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-sm text-muted-foreground">
+              등록된 사진이 없어요
+            </div>
+          </div>
+        )}
 
         <div className="rounded-xl bg-card p-4">
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
@@ -133,7 +162,7 @@ export function MemoDetailPage({
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   )
 }

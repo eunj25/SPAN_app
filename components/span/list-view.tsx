@@ -1,6 +1,7 @@
 "use client"
 
 import { Project, Memo } from "@/lib/store"
+import { getMemoPrimaryImage } from "@/lib/memo-images"
 import { Check, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AIInsights } from "./ai-insights"
@@ -74,7 +75,9 @@ export function ListView({ project }: ListViewProps) {
               </AccordionTrigger>
               <AccordionContent className="pb-0">
                 <div className="divide-y divide-border">
-                  {week.days.map((day, index) => (
+                  {week.days.map((day, index) => {
+                    const thumb = day.memo ? getMemoPrimaryImage(day.memo) : null
+                    return (
                     <div
                       key={index}
                       className={cn(
@@ -114,16 +117,23 @@ export function ListView({ project }: ListViewProps) {
                         )}
                       </div>
                       {day.memo && (
-                        <div className="h-10 w-10 overflow-hidden rounded-lg">
-                          <img
-                            src={day.memo.imageUrl}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
+                        <div className="h-10 w-10 overflow-hidden rounded-lg bg-muted">
+                          {thumb ? (
+                            <img
+                              src={thumb}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-[8px] text-muted-foreground">
+                              —
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </AccordionContent>
             </AccordionItem>

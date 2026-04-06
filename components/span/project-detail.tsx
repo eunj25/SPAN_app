@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useLayoutEffect, useMemo, useState } from "react"
 import { Project, Memo, useApp } from "@/lib/store"
 import { TimelineView } from "./timeline-view"
 import { ListView } from "./list-view"
@@ -13,9 +13,11 @@ import Image from "next/image"
 interface ProjectDetailProps {
   project: Project
   onBack: () => void
+  /** 메모 작성·상세 등 전체 화면 오버레이 시 하단 탭 숨김용 */
+  onFullScreenChange?: (fullScreen: boolean) => void
 }
 
-export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
+export function ProjectDetail({ project, onBack, onFullScreenChange }: ProjectDetailProps) {
   const [viewMode, setViewMode] = useState<"timeline" | "list">("timeline")
   const [showMemoForm, setShowMemoForm] = useState(false)
   const [activeMemoId, setActiveMemoId] = useState<string | null>(null)
@@ -27,17 +29,30 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
     [activeMemoId, currentProject.memos]
   )
 
-  const handleAddMemo = (data: { text: string; date: string; imageUrl: string; checklist: { id: string; text: string; checked: boolean }[] }) => {
+  const handleAddMemo = (data: {
+    text: string
+    date: string
+    imageUrl: string
+    imageUrls: string[]
+    checklist: { id: string; text: string; checked: boolean }[]
+  }) => {
     const newMemo: Memo = {
       id: `m${Date.now()}`,
       date: data.date,
       text: data.text,
       imageUrl: data.imageUrl,
+      imageUrls: data.imageUrls.length > 0 ? data.imageUrls : undefined,
       checklist: data.checklist
     }
     addMemo(project.id, newMemo)
     setShowMemoForm(false)
   }
+
+  useLayoutEffect(() => {
+    const fullScreen = Boolean(showMemoForm || activeMemoId)
+    onFullScreenChange?.(fullScreen)
+    return () => onFullScreenChange?.(false)
+  }, [showMemoForm, activeMemoId, onFullScreenChange])
 
   if (showMemoForm) {
     return (
